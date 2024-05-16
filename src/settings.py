@@ -8,11 +8,14 @@ class Settings(Enum):
 
     VERSION_APP: str = "0.1.0"
     BANNER: str = f"""
+
+
                      .|,
      _.  .. .._ _ *  -*-
     (_]\_|(_|[ | )|  '|`
        ._| 
 
            {VERSION_APP}
+
 
 """

@@ -102,4 +102,4 @@ class SubdomainDiscovery:
         if not output_file:
             output_file = "subs.txt"
         self.parse_results(output_file=output_file)
-        print(Fore.MAGENTA + f"Results saved in {output_file}" + Style.RESET_ALL)
+        print(Fore.MAGENTA + f"\n🪷  Results saved in {output_file}" + Style.RESET_ALL)

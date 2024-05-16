@@ -12,7 +12,7 @@ from src.recon.subdomain_discovery import SubdomainDiscovery
 from src.recon.crawlers import Crawlers
 from src.recon.js_parser import JSParser
 
-print(Fore.RED + Settings.BANNER.value + Style.RESET_ALL)
+print(Fore.LIGHTRED_EX + Settings.BANNER.value + Style.RESET_ALL)
 
 
 parser = argparse.ArgumentParser()
