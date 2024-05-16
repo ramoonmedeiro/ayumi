@@ -4,7 +4,7 @@ Ayumi is a simple framework for web hacking, which concatenates and uses its own
 
 
 <div align="center">
-  <img src="/assets/imgs/banner.png" width="500px" />
+  <img src="/assets/imgs/banner.png" width="320px" />
 </div>
 
 # Installation
