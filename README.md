@@ -46,6 +46,7 @@ $ python3 ayumi.py recon -h
 options:
   -h, --help            show this help message and exit
   -ds DS                Discovery subdomains.
+  -sp SP                Scan ports (Rustscan).
   -rc RC                Run crawler (katana).
   -rh RH                Run history crawler (gau and waybackurls).
   -rp RP                Run Paramspider.
