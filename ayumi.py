@@ -11,6 +11,7 @@ from src.settings import Settings
 from src.recon.subdomain_discovery import SubdomainDiscovery
 from src.recon.crawlers import Crawlers
 from src.recon.js_parser import JSParser
+from src.recon.port_scanner import PortScanner
 
 print(Fore.LIGHTRED_EX + Settings.BANNER.value + Style.RESET_ALL)
 
@@ -22,6 +23,7 @@ subparsers = parser.add_subparsers(dest='command')
 # Cria o subparser para o comando 'recon'
 subs_parser = subparsers.add_parser('recon')
 subs_parser.add_argument('-ds', required=False, help='Discovery subdomains.')
+subs_parser.add_argument('-sp', required=False, help='Scan ports (Rustscan).')
 subs_parser.add_argument('-rc', required=False, help='Run crawler (katana).')
 subs_parser.add_argument('-rh', required=False, help='Run history crawler (gau and waybackurls).')
 subs_parser.add_argument('-rp', required=False, help='Run Paramspider.')
@@ -46,6 +48,17 @@ if args.command == 'recon':
         subdomain_discovery = SubdomainDiscovery(domain_file=args.ds)
         subdomain_discovery.run_all(output_file=args.o)
         print(Fore.MAGENTA + "🌿 Subdomain discovery finished" + Style.RESET_ALL)
+        exit(0)
+
+    if args.sp:
+        print(Fore.MAGENTA + "🌿 Running port scanner\n" + Style.RESET_ALL)
+        port_scanner = PortScanner()
+        with open(args.sp, "r") as f:
+            subdomains = f.readlines()
+            for subdomain in subdomains:
+                print(f"{Fore.YELLOW}Running on:{Style.RESET_ALL} {subdomain.strip()}")
+                port_scanner.run(subdomain=subdomain.strip(), output_name=args.o)
+        print(Fore.MAGENTA + "🪷  Port scanner finished" + Style.RESET_ALL)
         exit(0)
 
     if args.rc:
