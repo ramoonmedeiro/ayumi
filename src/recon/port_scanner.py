@@ -5,9 +5,8 @@ import json
 
 
 class PortScanner:
-    def __init__(self) -> None:
-        pass
-        # self.domain_file = domain_file
+    def __init__(self, domain_file) -> None:
+        self.domain_file = domain_file
 
     def replace_ips(self, new_value, output):
         regex_ipv4 = r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b"
@@ -47,15 +46,22 @@ class PortScanner:
         with open(output_name, "a") as f:
             json.dump(content, f, indent=4)
 
-    def run(self, subdomain, output_name=None) -> None:
-        ports = self.run_rustscan(subdomain=subdomain)
-        parsed_output = self.parser_output(subdomain, ports)
+    def run(self, output_file=None) -> None:
 
-        if not output_name:
-            output_name = "output.json"
-        self.save_to_file(parsed_output, output_name)
+        with open(self.domain_file, "r") as f:
+            subdomains = f.readlines()
+        for subdomain in subdomains:
+            print(f"{Fore.YELLOW}Running on:{Style.RESET_ALL} {subdomain.strip()}")
 
+            ports = self.run_rustscan(subdomain=subdomain)
+            if "No IPs could be resolved" in ports:
+                print(Fore.RED + "No IPs could be resolved" + Style.RESET_ALL)
+                continue
 
-if __name__ == '__main__':
-    ps = PortScanner()
-    ps.run("cayena.com")
+            parsed_output = self.parser_output(subdomain, ports)
+
+            if not output_file:
+                output_file = "output.json"
+            self.save_to_file(parsed_output, output_file)
+
+        print(Fore.MAGENTA + f"\n🪷  Results saved in {output_file}" + Style.RESET_ALL)

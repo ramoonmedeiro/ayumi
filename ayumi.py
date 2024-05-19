@@ -52,13 +52,9 @@ if args.command == 'recon':
 
     if args.sp:
         print(Fore.MAGENTA + "🌿 Running port scanner\n" + Style.RESET_ALL)
-        port_scanner = PortScanner()
-        with open(args.sp, "r") as f:
-            subdomains = f.readlines()
-            for subdomain in subdomains:
-                print(f"{Fore.YELLOW}Running on:{Style.RESET_ALL} {subdomain.strip()}")
-                port_scanner.run(subdomain=subdomain.strip(), output_name=args.o)
-        print(Fore.MAGENTA + "🪷  Port scanner finished" + Style.RESET_ALL)
+        port_scanner = PortScanner(domain_file=args.sp)
+        port_scanner.run(output_file=args.o)
+        print(Fore.MAGENTA + "🌿 Port scanner finished" + Style.RESET_ALL)
         exit(0)
 
     if args.rc:
