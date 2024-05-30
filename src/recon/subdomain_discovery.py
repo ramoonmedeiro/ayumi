@@ -68,20 +68,6 @@ class SubdomainDiscovery:
             text=True
         )
 
-    def run_crtsh(self):
-
-        print(Fore.GREEN + "Running: " + Fore.CYAN + "crt.sh" + Style.RESET_ALL)
-
-        command = f"cat {self.domain_file} | xargs -I@ sh -c curl -s 'https://crt.sh/?q=%25.@&output=json' | jq -r '.[].name_value' | {self.PATH_GO}/anew crt.txt"
-
-        subprocess.run(
-            command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-
     def parse_results(self, output_file: str) -> None:
 
         command = f"cat temp-subfinder.txt temp-assetfinder.txt temp-findomain.txt crt.txt | sort | {self.PATH_GO}/anew {output_file} && rm temp-subfinder.txt temp-assetfinder.txt temp-findomain.txt crt.txt"
@@ -98,7 +84,6 @@ class SubdomainDiscovery:
         self.run_subfinder()
         self.run_assetfinder()
         self.run_findomain()
-        self.run_crtsh()
         if not output_file:
             output_file = "subs.txt"
         self.parse_results(output_file=output_file)

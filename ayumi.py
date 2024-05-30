@@ -11,7 +11,6 @@ from src.settings import Settings
 from src.recon.subdomain_discovery import SubdomainDiscovery
 from src.recon.crawlers import Crawlers
 from src.recon.js_parser import JSParser
-from src.recon.port_scanner import PortScanner
 
 print(Fore.LIGHTRED_EX + Settings.BANNER.value + Style.RESET_ALL)
 
@@ -48,13 +47,6 @@ if args.command == 'recon':
         subdomain_discovery = SubdomainDiscovery(domain_file=args.ds)
         subdomain_discovery.run_all(output_file=args.o)
         print(Fore.MAGENTA + "🌿 Subdomain discovery finished" + Style.RESET_ALL)
-        exit(0)
-
-    if args.sp:
-        print(Fore.MAGENTA + "🌿 Running port scanner\n" + Style.RESET_ALL)
-        port_scanner = PortScanner(domain_file=args.sp)
-        port_scanner.run(output_file=args.o)
-        print(Fore.MAGENTA + "🌿 Port scanner finished" + Style.RESET_ALL)
         exit(0)
 
     if args.rc:
