@@ -1,12 +1,15 @@
 import subprocess
 from colorama import Fore, Style
 from src.settings import Settings
+import os
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
 
 
 class SubdomainDiscovery:
     def __init__(self, domain_file: str) -> None:
         self.domain_file = domain_file
-        self.PATH_GO = Settings.PATH_GO.value
+        self.chaos_api_key = os.getenv("CHAOS_API_KEY")
 
     def run_process(self, command) -> None:
 
@@ -30,7 +33,7 @@ class SubdomainDiscovery:
         print(Fore.GREEN + "Running: " + Fore.CYAN + "subfinder" + Style.RESET_ALL)
 
         command = [
-            f'{self.PATH_GO}/subfinder',
+            'subfinder',
             '-dL',
             self.domain_file,
             '-silent',
@@ -68,9 +71,64 @@ class SubdomainDiscovery:
             text=True
         )
 
+    def run_chaos(self) -> None:
+            
+            print(Fore.GREEN + "Running: " + Fore.CYAN + "chaos" + Style.RESET_ALL)
+    
+            command = [
+            f'chaos',
+            '-dL',
+            self.domain_file,
+            '-key',
+            self.chaos_api_key,
+            '-o',
+            'temp-chaos.txt'
+        ]
+    
+            subprocess.run(
+                command,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+
+    def run_haktrails(self) -> None:
+            
+            print(Fore.GREEN + "Running: " + Fore.CYAN + "haktrails" + Style.RESET_ALL)
+    
+            command = f"cat {self.domain_file} | haktrails subdomains | anew temp-haktrails.txt"
+    
+            subprocess.run(
+                command,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+
+    def run_crtsh(self) -> None:
+
+        print(Fore.GREEN + "Running: " + Fore.CYAN + "crt.sh" + Style.RESET_ALL)
+
+        command = f"cat {self.domain_file} | xargs -I@ -sh c 'curl -s \"https://crt.sh/?q=%25.@&output=json\"" + \
+            " | jq -r '.[].name_value' | sed 's/\\*\\.//g' | anew temp-crtsh.txt'"
+
+        subprocess.run(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+
     def parse_results(self, output_file: str) -> None:
 
-        command = f"cat temp-subfinder.txt temp-assetfinder.txt temp-findomain.txt crt.txt | sort | {self.PATH_GO}/anew {output_file} && rm temp-subfinder.txt temp-assetfinder.txt temp-findomain.txt crt.txt"
+        command = f"cat temp-subfinder.txt temp-assetfinder.txt temp-findomain.txt temp-chaos.txt temp-crtsh.txt temp-haktrails.txt" + \
+        " | " + \
+        "sort" + \
+        " | " + \
+        f"anew {output_file} && rm temp-subfinder.txt temp-assetfinder.txt temp-findomain.txt chaos.txt temp-haktrails.txt temp-crtsh.txt"
 
         subprocess.run(
             command,
@@ -84,6 +142,9 @@ class SubdomainDiscovery:
         self.run_subfinder()
         self.run_assetfinder()
         self.run_findomain()
+        self.run_chaos()
+        self.run_haktrails()
+        self.run_crtsh()
         if not output_file:
             output_file = "subs.txt"
         self.parse_results(output_file=output_file)
