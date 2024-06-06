@@ -33,7 +33,7 @@ class Crawlers:
             output_file = "crawler.txt"
 
         command = [
-            f'{self.PATH_GO}/katana',
+            f'katana',
             '-list',
             self.domains_file,
             '-o',
@@ -47,7 +47,7 @@ class Crawlers:
 
         print(Fore.GREEN + "Running: " + Fore.CYAN + "gau" + Style.RESET_ALL)
 
-        command = f"cat {self.domains_file} | {self.PATH_GO}/gau -b png,jpg,gif -t 5 | tee -a gau.txt"
+        command = f"cat {self.domains_file} | gau --blacklist png,jpg,gif -t 5 | tee -a gau.txt"
 
         subprocess.run(
             command,
@@ -61,7 +61,7 @@ class Crawlers:
 
         print(Fore.GREEN + "Running: " + Fore.CYAN + "waybackurls" + Style.RESET_ALL)
 
-        command = f"cat {self.domains_file} | {self.PATH_GO}/waybackurls | tee -a waybackurls.txt"
+        command = f"cat {self.domains_file} | waybackurls | tee -a waybackurls.txt"
 
         subprocess.run(
             command,
@@ -73,7 +73,7 @@ class Crawlers:
 
     def parse_results(self, output_file) -> None:
 
-        command = f"cat gau.txt waybackurls.txt | sort | {self.PATH_GO}/anew {output_file} && rm gau.txt waybackurls.txt"
+        command = f"cat gau.txt waybackurls.txt | sort | anew {output_file} && rm gau.txt waybackurls.txt"
         subprocess.run(
             command,
             shell=True,
@@ -105,7 +105,7 @@ class Crawlers:
         if not output_file:
             output_file = "paramspider.txt"
 
-        command = f"cat results/* | sort | {self.PATH_GO}/anew {output_file} && rm -rf results/"
+        command = f"cat results/* | sort | anew {output_file} && rm -rf results/"
         subprocess.run(
             command,
             shell=True,
