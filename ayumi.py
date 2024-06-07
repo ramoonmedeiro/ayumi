@@ -22,7 +22,6 @@ subparsers = parser.add_subparsers(dest='command')
 # Cria o subparser para o comando 'recon'
 subs_parser = subparsers.add_parser('recon')
 subs_parser.add_argument('-ds', required=False, help='Discovery subdomains.')
-subs_parser.add_argument('-sp', required=False, help='Scan ports (Rustscan).')
 subs_parser.add_argument('-rc', required=False, help='Run crawler (katana).')
 subs_parser.add_argument('-rh', required=False, help='Run history crawler (gau and waybackurls).')
 subs_parser.add_argument('-rp', required=False, help='Run Paramspider.')
