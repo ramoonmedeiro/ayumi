@@ -5,7 +5,6 @@ from src.settings import Settings
 class JSParser:
     def __init__(self, domains_file: str) -> None:
         self.domains_file = domains_file
-        self.PATH_GO = Settings.PATH_GO.value
 
     def run_process(self, command) -> None:
 
@@ -32,7 +31,7 @@ class JSParser:
             output_file = "getJS.txt"
 
         command = [
-            f'{self.PATH_GO}/getJS',
+            'getJS',
             '--complete',
             '--input',
             self.domains_file,
