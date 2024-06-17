@@ -1,6 +1,12 @@
 # colors lib
 from colorama import Fore, Style
 
+# bar time
+from tqdm import tqdm
+
+# validators
+import validators
+
 # cli libs
 import argparse
 
@@ -11,11 +17,16 @@ from src.settings import Settings
 from src.recon.subdomain_discovery import SubdomainDiscovery
 from src.recon.crawlers import Crawlers
 from src.recon.js_parser import JSParser
+from src.recon.extractor import LinkExtractor
 
 print(Fore.LIGHTRED_EX + Settings.BANNER.value + Style.RESET_ALL)
 
 
 parser = argparse.ArgumentParser()
+parser.add_argument('-C', '--cookie', required=False, help='Cookie to use in requests.', default=None)
+parser.add_argument('-H', '--header', required=False, help='Header to use in requests.', default=None)
+parser.add_argument("-m", "--method", required=False, help="HTTP method to use in requests.", default="GET")
+
 subparsers = parser.add_subparsers(dest='command')
 
 
@@ -25,6 +36,7 @@ subs_parser.add_argument('-ds', required=False, help='Discovery subdomains.')
 subs_parser.add_argument('-rc', required=False, help='Run crawler (katana).')
 subs_parser.add_argument('-rh', required=False, help='Run history crawler (gau and waybackurls).')
 subs_parser.add_argument('-rp', required=False, help='Run Paramspider.')
+subs_parser.add_argument('-el', required=False, help='Extract links from a url')
 subs_parser.add_argument('-get-js', required=False, help='Run getJS.')
 subs_parser.add_argument('-filter-js', required=False, help='Filter JS files from urls file.')
 subs_parser.add_argument('-o', required=False, help='output file.')
@@ -80,5 +92,38 @@ if args.command == 'recon':
         print(Fore.MAGENTA + "🌿 Filtering JS files\n" + Style.RESET_ALL)
         js_parser = JSParser(domains_file=args.filter_js)
         js_parser.get_js_from_file(output_file=args.o)
+        print(Fore.MAGENTA + "🌿 Finished" + Style.RESET_ALL)
+        exit(0)
+
+    if args.el:
+        print(Fore.MAGENTA + "🌿 Extracting links\n" + Style.RESET_ALL + "\n")
+        if "https://" in args.el or "http://" in args.el:
+            le = LinkExtractor(url=args.el.strip(), method=args.method)
+            links_extracted = le.extract(args.cookie, args.header)
+            if args.o is not None:
+                with open(args.o, 'w') as f:
+                    for link in links_extracted:
+                        f.write(link + '\n')
+            else:
+                for link in links_extracted:
+                    print(link)
+        else:
+            with open(args.el, 'r') as f:
+                urls = f.readlines()
+                for url in tqdm(urls):
+                    url = url.strip()
+                    if validators.url(url): 
+                        le = LinkExtractor(url=url, method=args.method)
+                        links_extracted = le.extract(args.cookie, args.header)
+                        if args.o is None:
+                            args.o = 'links_extracted.txt'
+                        with open(args.o, 'a') as f:
+                            f.write(f"*-* Links extracted from {url}\n")
+                            for link in links_extracted:
+                                f.write(link + '\n')
+                            f.write('\n')
+                    else:
+                        print(f"Ignoring invalid URL: {url}")
+        print("\n"+Fore.MAGENTA + f"Results saved in {args.o}" + Style.RESET_ALL)   
         print(Fore.MAGENTA + "🌿 Finished" + Style.RESET_ALL)
         exit(0)
