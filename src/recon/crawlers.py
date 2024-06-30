@@ -47,7 +47,7 @@ class Crawlers:
 
         print(Fore.GREEN + "Running: " + Fore.CYAN + "gau" + Style.RESET_ALL)
 
-        command = f"cat {self.domains_file} | gau --blacklist png,jpg,gif -t 5 | tee -a gau.txt"
+        command = f"cat {self.domains_file} | gau | tee -a gau.txt"
 
         subprocess.run(
             command,
