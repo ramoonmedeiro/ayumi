@@ -18,6 +18,7 @@ from src.recon.subdomain_discovery import SubdomainDiscovery
 from src.recon.crawlers import Crawlers
 from src.recon.js_parser import JSParser
 from src.recon.extractor import LinkExtractor
+from src.recon.tech_detect import TechDetect
 
 print(Fore.LIGHTRED_EX + Settings.BANNER.value + Style.RESET_ALL)
 
@@ -37,6 +38,7 @@ subs_parser.add_argument('-rc', required=False, help='Run crawler (katana).')
 subs_parser.add_argument('-rh', required=False, help='Run history crawler (gau and waybackurls).')
 subs_parser.add_argument('-rp', required=False, help='Run Paramspider.')
 subs_parser.add_argument('-el', required=False, help='Extract links from a url')
+subs_parser.add_argument('-td', required=False, help='Tech detect from a url or filename.')
 subs_parser.add_argument('-get-js', required=False, help='Run getJS.')
 subs_parser.add_argument('-filter-js', required=False, help='Filter JS files from urls file.')
 subs_parser.add_argument('-o', required=False, help='output file.')
@@ -127,3 +129,15 @@ if args.command == 'recon':
         print("\n"+Fore.MAGENTA + f"Results saved in {args.o}" + Style.RESET_ALL)   
         print(Fore.MAGENTA + "🌿 Finished" + Style.RESET_ALL)
         exit(0)
+
+    if args.td:
+        print(Fore.MAGENTA + "🌿 Tech detect\n" + Style.RESET_ALL + "\n")
+
+        td = TechDetect()
+        if "https://" in args.td or "http://" in args.td:
+            _ = td.td_single(url=args.td)
+        else:
+            td.td_multi(file_name=args.td, output=args.o)
+        
+        print(Fore.MAGENTA + "🌿 Finished" + Style.RESET_ALL)
+
