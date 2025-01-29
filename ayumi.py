@@ -13,12 +13,15 @@ import argparse
 # lib settings
 from src.settings import Settings
 
-# src libs
+# recon libs
 from src.recon.subdomain_discovery import SubdomainDiscovery
 from src.recon.crawlers import Crawlers
 from src.recon.js_parser import JSParser
 from src.recon.extractor import LinkExtractor
 from src.recon.tech_detect import TechDetect
+
+# atk libs
+from src.atk.crlf import CRLFAtk
 
 print(Fore.LIGHTRED_EX + Settings.BANNER.value + Style.RESET_ALL)
 
@@ -45,7 +48,7 @@ subs_parser.add_argument('-o', required=False, help='output file.')
 
 # Cria o subparser para o comando 'atk'
 atk_parser = subparsers.add_parser('atk')
-# atk_parser.add_argument('-file', required=True, help='Nome do arquivo de entrada')
+atk_parser.add_argument('-crlf', required=True, help='Run crlf injection')
 
 # Analisa os argumentos da linha de comando
 args = parser.parse_args()
@@ -141,3 +144,9 @@ if args.command == 'recon':
         
         print(Fore.MAGENTA + "🌿 Finished" + Style.RESET_ALL)
 
+if args.command == 'atk':
+    print(Fore.LIGHTMAGENTA_EX + "🍁 ATTACK MODE" + Style.RESET_ALL)
+    if args.crlf:
+        crlf = CRLFAtk(args.crlf)
+        crlf.run_all()
+    print(Fore.MAGENTA + "🍂 Finished" + Style.RESET_ALL)
