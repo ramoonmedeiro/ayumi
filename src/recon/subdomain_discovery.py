@@ -57,20 +57,6 @@ class SubdomainDiscovery:
             text=True
         )
 
-    def run_findomain(self) -> None:
-
-        print(Fore.GREEN + "Running: " + Fore.CYAN + "findomain" + Style.RESET_ALL)
-
-        command = f"cat {self.domain_file} | xargs -I@ sh -c 'findomain -t @ -q | tee -a temp-findomain.txt'"
-
-        subprocess.run(
-            command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-
     def run_chaos(self) -> None:
             
             print(Fore.GREEN + "Running: " + Fore.CYAN + "chaos" + Style.RESET_ALL)
@@ -84,20 +70,6 @@ class SubdomainDiscovery:
             '-o',
             'temp-chaos.txt'
         ]
-    
-            subprocess.run(
-                command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
-
-    def run_haktrails(self) -> None:
-            
-            print(Fore.GREEN + "Running: " + Fore.CYAN + "haktrails" + Style.RESET_ALL)
-    
-            command = f"cat {self.domain_file} | haktrails subdomains | anew temp-haktrails.txt"
     
             subprocess.run(
                 command,
@@ -124,11 +96,11 @@ class SubdomainDiscovery:
 
     def parse_results(self, output_file: str) -> None:
 
-        command = f"cat temp-subfinder.txt temp-assetfinder.txt temp-findomain.txt temp-chaos.txt temp-crtsh.txt temp-haktrails.txt" + \
+        command = f"cat temp-subfinder.txt temp-assetfinder.txt temp-chaos.txt temp-crtsh.txt" + \
         " | " + \
         "sort" + \
         " | " + \
-        f"anew {output_file} && rm temp-subfinder.txt temp-assetfinder.txt temp-findomain.txt chaos.txt temp-haktrails.txt temp-crtsh.txt"
+        f"anew {output_file} && rm temp-subfinder.txt temp-assetfinder.txt chaos.txt temp-crtsh.txt"
 
         subprocess.run(
             command,
@@ -141,9 +113,7 @@ class SubdomainDiscovery:
     def run_all(self, output_file: str = None) -> None:
         self.run_subfinder()
         self.run_assetfinder()
-        self.run_findomain()
         self.run_chaos()
-        self.run_haktrails()
         self.run_crtsh()
         if not output_file:
             output_file = "subs.txt"
