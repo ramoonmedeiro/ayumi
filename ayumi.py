@@ -22,6 +22,7 @@ from src.recon.tech_detect import TechDetect
 
 # atk libs
 from src.atk.crlf import CRLFAtk
+from src.atk.subdomain_takeover import SubdomainTakeover
 
 print(Fore.LIGHTRED_EX + Settings.BANNER.value + Style.RESET_ALL)
 
@@ -48,7 +49,11 @@ subs_parser.add_argument('-o', required=False, help='output file.')
 
 # Cria o subparser para o comando 'atk'
 atk_parser = subparsers.add_parser('atk')
-atk_parser.add_argument('-crlf', required=True, help='Run crlf injection')
+atk_parser.add_argument('-crlf', required=False, help='Run crlf injection')
+atk_parser.add_argument('-st', required=False, help='Run subdomain takeover')
+atk_parser.add_argument('-o', required=False, help='output file.')
+
+
 
 # Analisa os argumentos da linha de comando
 args = parser.parse_args()
@@ -149,4 +154,9 @@ if args.command == 'atk':
     if args.crlf:
         crlf = CRLFAtk(args.crlf)
         crlf.run_all()
-    print(Fore.MAGENTA + "🍂 Finished" + Style.RESET_ALL)
+    #print(Fore.MAGENTA + "🍂 Finished" + Style.RESET_ALL)
+    if args.st:
+        print(Fore.MAGENTA + "🍂 Running subdomain takeover analysis" + Style.RESET_ALL)
+        st_client = SubdomainTakeover(args.st)
+        st_client.run_all(output_file=args.o)
+        print(Fore.MAGENTA + "🍂 Subdomain takeover analysis finished" + Style.RESET_ALL)
