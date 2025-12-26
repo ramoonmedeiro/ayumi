@@ -31,10 +31,7 @@ echo "Httpx installed"
 echo "[+] Install crawlers"
 cd ~/
 go install github.com/projectdiscovery/katana/cmd/katana@latest
-go install github.com/lc/gau/v2/cmd/gau@latest
-go install github.com/tomnomnom/waybackurls@latest
-git clone https://github.com/devanshbatham/paramspider
-cd paramspider
+go install -v github.com/projectdiscovery/urlfinder/cmd/urlfinder@latest
 pip install .
 echo "Crawlers installed"
 cd ~/
@@ -50,14 +47,6 @@ echo "Nuclei installed"
 echo "[+] Install anew"
 go install -v github.com/tomnomnom/anew@latest
 echo "Anew installed"
-
-echo "[+] Install ffuf"
-apt-get install ffuf -y
-echo "Ffuf installed"
-
-echo "[+] Install dnsx"
-go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
-echo "Dnsx installed"
 
 echo "[+] Passando tudo para /usr/bin"
 sudo mv ~/go/bin/* /usr/bin/

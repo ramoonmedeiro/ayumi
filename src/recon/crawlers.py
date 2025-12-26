@@ -1,12 +1,17 @@
 import subprocess
 from colorama import Fore, Style
 from src.settings import Settings
+import os
 
 
 class Crawlers:
-    def __init__(self, domains_file: str) -> None:
-        self.domains_file = domains_file
-        self.PATH_GO = Settings.PATH_GO.value
+    def __init__(self, _input: str) -> None:
+        self.input = _input
+    
+    def _is_file(self):
+        if os.path.isfile(self.input):
+            return True
+        return False
 
     def run_process(self, command) -> None:
 
@@ -31,11 +36,15 @@ class Crawlers:
 
         if not output_file:
             output_file = "crawler.txt"
+        if not self._is_file():
+            input_type = "-d"
+        else:
+            input_type = "-list"
 
         command = [
             f'katana',
-            '-list',
-            self.domains_file,
+            input_type,
+            self.input,
             '-o',
             output_file
         ]
@@ -43,74 +52,26 @@ class Crawlers:
         self.run_process(command)
         print(Fore.MAGENTA + f"Results saved in {output_file}" + Style.RESET_ALL)
 
-    def run_gau(self) -> None:
+    def run_urlfinder(self, output_file=None) -> None:
 
-        print(Fore.GREEN + "Running: " + Fore.CYAN + "gau" + Style.RESET_ALL)
+        print(Fore.GREEN + "Running: " + Fore.CYAN + "Urlfinder" + Style.RESET_ALL)
 
-        command = f"cat {self.domains_file} | gau | tee -a gau.txt"
-
-        subprocess.run(
-            command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-
-    def run_waybackurls(self) -> None:
-
-        print(Fore.GREEN + "Running: " + Fore.CYAN + "waybackurls" + Style.RESET_ALL)
-
-        command = f"cat {self.domains_file} | waybackurls | tee -a waybackurls.txt"
-
-        subprocess.run(
-            command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-
-    def parse_results(self, output_file) -> None:
-
-        command = f"cat gau.txt waybackurls.txt | sort | anew {output_file} && rm gau.txt waybackurls.txt"
-        subprocess.run(
-            command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-
-    def run_history(self, output_file=None) -> None:
-
-        self.run_gau()
-        self.run_waybackurls()
         if not output_file:
-            output_file = "urls-history.txt"
-        self.parse_results(output_file)
-        print(Fore.MAGENTA + f"Results saved in {output_file}" + Style.RESET_ALL)
+            output_file = "crawler-history.txt"
+        
+        if not self._is_file():
+            input_type = "-d"
+        else:
+            input_type = "-list"
 
-    def run_paramspider(self, output_file=None) -> None:
         command = [
-            'paramspider',
-            '-l',
-            self.domains_file,
-            '-p',
-            'AYUMI'
+            f'urlfinder',
+            input_type,
+            self.input,
+            '-o',
+            output_file,
+            '-all'
         ]
 
         self.run_process(command)
-
-        if not output_file:
-            output_file = "paramspider.txt"
-
-        command = f"cat results/* | sort | anew {output_file} && rm -rf results/"
-        subprocess.run(
-            command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
         print(Fore.MAGENTA + f"Results saved in {output_file}" + Style.RESET_ALL)

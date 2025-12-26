@@ -3,8 +3,17 @@ from colorama import Fore, Style
 from src.settings import Settings
 
 class JSParser:
-    def __init__(self, domains_file: str) -> None:
+    def __init__(
+        self, 
+        domains_file: str, 
+        headers=None, 
+        cookies=None,
+        method="GET"
+    ) -> None:
         self.domains_file = domains_file
+        self.headers = headers
+        self.cookies = cookies
+        self.method = method
 
     def run_process(self, command) -> None:
 
@@ -23,8 +32,7 @@ class JSParser:
         except Exception as e:
             print(f"Error on trying running command: {str(e)}")
 
-    def run_get_js(self, output_file=None) -> None:
-
+    def run_get_js(self, output_file: str = None) -> None:
         print(Fore.GREEN + "Running: " + Fore.CYAN + "getJS" + Style.RESET_ALL)
 
         if not output_file:
@@ -33,19 +41,25 @@ class JSParser:
         command = [
             'getJS',
             '--complete',
-            '--input',
-            self.domains_file,
-            '--output',
-            output_file
+            '--input', self.domains_file,
+            '--output', output_file,
+            '-method', self.method
         ]
 
+        if self.headers:
+            for h in headers:
+                if h:
+                    command.extend(['-header', str(h)])
+
+        if self.cookies:
+            for c in cookies:
+                if c:
+                    command.extend(['-header', f'Cookie: {c}'])
+        print(command)
         self.run_process(command)
         print(Fore.MAGENTA + f"Results saved in {output_file}" + Style.RESET_ALL)
 
-    def get_js_from_file(self, output_file=None) -> None:
-
-        if not output_file:
-            output_file = "filtered_js.txt"
+    def get_js_from_file(self, output_file: str = "filtered_js.txt") -> None:
 
         command = f"cat {self.domains_file} | grep -iE '\.js'| grep -iEv '(\.jsp|\.json)' | tee -a {output_file}"
 

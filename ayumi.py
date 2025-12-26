@@ -28,8 +28,8 @@ print(Fore.LIGHTRED_EX + Settings.BANNER.value + Style.RESET_ALL)
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-C', '--cookie', required=False, help='Cookie to use in requests.', default=None)
-parser.add_argument('-H', '--header', required=False, help='Header to use in requests.', default=None)
+parser.add_argument('-C', '--cookie', required=False, help='Cookie to use in requests.', action='append', default=None)
+parser.add_argument('-H', '--header', required=False, help='Header to use in requests.', action='append', default=None)
 parser.add_argument("-m", "--method", required=False, help="HTTP method to use in requests.", default="GET")
 
 subparsers = parser.add_subparsers(dest='command')
@@ -39,8 +39,7 @@ subparsers = parser.add_subparsers(dest='command')
 subs_parser = subparsers.add_parser('recon')
 subs_parser.add_argument('-ds', required=False, help='Discovery subdomains.')
 subs_parser.add_argument('-rc', required=False, help='Run crawler (katana).')
-subs_parser.add_argument('-rh', required=False, help='Run history crawler (gau and waybackurls).')
-subs_parser.add_argument('-rp', required=False, help='Run Paramspider.')
+subs_parser.add_argument('-rh', required=False, help='Run history crawler (urlfinder).')
 subs_parser.add_argument('-el', required=False, help='Extract links from a url')
 subs_parser.add_argument('-td', required=False, help='Tech detect from a url or filename.')
 subs_parser.add_argument('-get-js', required=False, help='Run getJS.')
@@ -72,28 +71,26 @@ if args.command == 'recon':
 
     if args.rc:
         print(Fore.MAGENTA + "🌿 Running crawler\n" + Style.RESET_ALL)
-        crawler = Crawlers(domains_file=args.rc)
+        crawler = Crawlers(_input=args.rc)
         crawler.run_katana(output_file=args.o)
         print(Fore.MAGENTA + "🌿 Crawler finished" + Style.RESET_ALL)
         exit(0)
 
     if args.rh:
         print(Fore.MAGENTA + "🌿 Running history crawler\n" + Style.RESET_ALL)
-        crawler = Crawlers(domains_file=args.rh)
-        crawler.run_history(output_file=args.o)
+        crawler = Crawlers(_input=args.rh)
+        crawler.run_urlfinder(output_file=args.o)
         print(Fore.MAGENTA + "🌿 History crawler finished" + Style.RESET_ALL)
-        exit(0)
-
-    if args.rp:
-        print(Fore.MAGENTA + "🌿 Running Paramspider\n" + Style.RESET_ALL)
-        crawler = Crawlers(domains_file=args.rp)
-        crawler.run_paramspider(output_file=args.o)
-        print(Fore.MAGENTA + "🌿 Paramspider finished" + Style.RESET_ALL)
         exit(0)
 
     if args.get_js:
         print(Fore.MAGENTA + "🌿 Gettings JS files\n" + Style.RESET_ALL)
-        js_parser = JSParser(domains_file=args.get_js)
+        js_parser = JSParser(
+            domains_file=args.get_js,
+            headers=args.header,
+            cookies=args.cookie,
+            method=args.method
+        )
         js_parser.run_get_js(output_file=args.o)
         print(Fore.MAGENTA + "🌿 Finished" + Style.RESET_ALL)
         exit(0)
