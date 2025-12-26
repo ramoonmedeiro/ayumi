@@ -7,9 +7,14 @@ load_dotenv(find_dotenv())
 
 
 class SubdomainDiscovery:
-    def __init__(self, domain_file: str) -> None:
-        self.domain_file = domain_file
+    def __init__(self, _input: str) -> None:
+        self.input = _input
         self.chaos_api_key = os.getenv("CHAOS_API_KEY")
+    
+    def _is_file(self):
+        if os.path.isfile(self.input):
+            return True
+        return False
 
     def run_process(self, command) -> None:
 
@@ -31,11 +36,16 @@ class SubdomainDiscovery:
     def run_subfinder(self) -> None:
 
         print(Fore.GREEN + "Running: " + Fore.CYAN + "subfinder" + Style.RESET_ALL)
+        
+        if not self._is_file():
+            input_type = "-d"
+        else:
+            input_type = "-dL"
 
         command = [
             'subfinder',
-            '-dL',
-            self.domain_file,
+            input_type,
+            self.input,
             '-silent',
             '-all',
             '-o',
@@ -47,8 +57,12 @@ class SubdomainDiscovery:
     def run_assetfinder(self) -> None:
 
         print(Fore.GREEN + "Running: " + Fore.CYAN + "assetfinder" + Style.RESET_ALL)
+        if not self._is_file():
+            input_type = f"echo {self.input}"
+        else:
+            input_type = f"cat {self.input}"
 
-        command = f"cat {self.domain_file} | xargs -I@ sh -c 'assetfinder -subs-only @  | tee -a temp-assetfinder.txt'"
+        command = f"{input_type} | xargs -I@ sh -c 'assetfinder -subs-only @  | tee -a temp-assetfinder.txt'"
         subprocess.run(
             command,
             shell=True,
@@ -59,31 +73,39 @@ class SubdomainDiscovery:
 
     def run_chaos(self) -> None:
             
-            print(Fore.GREEN + "Running: " + Fore.CYAN + "chaos" + Style.RESET_ALL)
-    
-            command = [
-            f'chaos',
-            '-dL',
-            self.domain_file,
+        print(Fore.GREEN + "Running: " + Fore.CYAN + "chaos" + Style.RESET_ALL)
+        if not self._is_file():
+            input_type = "-d"
+        else:
+            input_type = "-dL"
+
+        command = [
+            'chaos',
+            input_type,
+            self.input,
             '-key',
             self.chaos_api_key,
             '-o',
             'temp-chaos.txt'
-        ]
-    
-            subprocess.run(
-                command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
+    ]
+
+        subprocess.run(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
 
     def run_crtsh(self) -> None:
 
         print(Fore.GREEN + "Running: " + Fore.CYAN + "crt.sh" + Style.RESET_ALL)
+        if not self._is_file():
+            input_type = f"echo {self.input}"
+        else:
+            input_type = f"cat {self.input}"
 
-        command = f"cat {self.domain_file} | xargs -I@ -sh c 'curl -s \"https://crt.sh/?q=%25.@&output=json\"" + \
+        command = f"{input_type} | xargs -I@ -sh c 'curl -s \"https://crt.sh/?q=%25.@&output=json\"" + \
             " | jq -r '.[].name_value' | sed 's/\\*\\.//g' | anew temp-crtsh.txt'"
 
         subprocess.run(

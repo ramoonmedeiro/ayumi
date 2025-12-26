@@ -1,19 +1,25 @@
 import subprocess
 from colorama import Fore, Style
 from src.settings import Settings
+import os
 
 class JSParser:
     def __init__(
         self, 
-        domains_file: str, 
+        _input: str, 
         headers=None, 
         cookies=None,
         method="GET"
     ) -> None:
-        self.domains_file = domains_file
+        self.input = _input
         self.headers = headers
         self.cookies = cookies
         self.method = method
+    
+    def _is_file(self):
+        if os.path.isfile(self.input):
+            return True
+        return False
 
     def run_process(self, command) -> None:
 
@@ -37,12 +43,17 @@ class JSParser:
 
         if not output_file:
             output_file = "getJS.txt"
+        
+        if not self._is_file():
+            input_type = "-url"
+        else:
+            input_type = "-input"
 
         command = [
             'getJS',
-            '--complete',
-            '--input', self.domains_file,
-            '--output', output_file,
+            '-complete',
+            input_type, self.input,
+            '-output', output_file,
             '-method', self.method
         ]
 
@@ -61,7 +72,7 @@ class JSParser:
 
     def get_js_from_file(self, output_file: str = "filtered_js.txt") -> None:
 
-        command = f"cat {self.domains_file} | grep -iE '\.js'| grep -iEv '(\.jsp|\.json)' | tee -a {output_file}"
+        command = f"cat {self.input} | grep -iE '\.js'| grep -iEv '(\.jsp|\.json)' | tee -a {output_file}"
 
         subprocess.run(
             command,

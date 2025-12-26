@@ -17,7 +17,7 @@ from src.settings import Settings
 from src.recon.subdomain_discovery import SubdomainDiscovery
 from src.recon.crawlers import Crawlers
 from src.recon.js_parser import JSParser
-from src.recon.extractor import LinkExtractor
+from src.recon.extractor import LinkExtractor, JuiceKeysExtractor
 from src.recon.tech_detect import TechDetect
 
 # atk libs
@@ -41,6 +41,7 @@ subs_parser.add_argument('-ds', required=False, help='Discovery subdomains.')
 subs_parser.add_argument('-rc', required=False, help='Run crawler (katana).')
 subs_parser.add_argument('-rh', required=False, help='Run history crawler (urlfinder).')
 subs_parser.add_argument('-el', required=False, help='Extract links from a url')
+subs_parser.add_argument('-ek', required=False, help='Extract keys from a url')
 subs_parser.add_argument('-td', required=False, help='Tech detect from a url or filename.')
 subs_parser.add_argument('-get-js', required=False, help='Run getJS.')
 subs_parser.add_argument('-filter-js', required=False, help='Filter JS files from urls file.')
@@ -64,7 +65,7 @@ if args.command == 'recon':
     print(Fore.LIGHTMAGENTA_EX + "🌸 RECON MODE" + Style.RESET_ALL)
     if args.ds:
         print(Fore.MAGENTA + "🌿 Running subdomain discovery\n" + Style.RESET_ALL)
-        subdomain_discovery = SubdomainDiscovery(domain_file=args.ds)
+        subdomain_discovery = SubdomainDiscovery(_input=args.ds)
         subdomain_discovery.run_all(output_file=args.o)
         print(Fore.MAGENTA + "🌿 Subdomain discovery finished" + Style.RESET_ALL)
         exit(0)
@@ -86,7 +87,7 @@ if args.command == 'recon':
     if args.get_js:
         print(Fore.MAGENTA + "🌿 Gettings JS files\n" + Style.RESET_ALL)
         js_parser = JSParser(
-            domains_file=args.get_js,
+            _input=args.get_js,
             headers=args.header,
             cookies=args.cookie,
             method=args.method
@@ -97,42 +98,23 @@ if args.command == 'recon':
 
     if args.filter_js:
         print(Fore.MAGENTA + "🌿 Filtering JS files\n" + Style.RESET_ALL)
-        js_parser = JSParser(domains_file=args.filter_js)
+        js_parser = JSParser(_input=args.filter_js)
         js_parser.get_js_from_file(output_file=args.o)
         print(Fore.MAGENTA + "🌿 Finished" + Style.RESET_ALL)
         exit(0)
 
     if args.el:
-        print(Fore.MAGENTA + "🌿 Extracting links\n" + Style.RESET_ALL + "\n")
-        if "https://" in args.el or "http://" in args.el:
-            le = LinkExtractor(url=args.el.strip(), method=args.method)
-            links_extracted = le.extract(args.cookie, args.header)
-            if args.o is not None:
-                with open(args.o, 'w') as f:
-                    for link in links_extracted:
-                        f.write(link + '\n')
-            else:
-                for link in links_extracted:
-                    print(link)
-        else:
-            with open(args.el, 'r') as f:
-                urls = f.readlines()
-                for url in tqdm(urls):
-                    url = url.strip()
-                    if validators.url(url): 
-                        le = LinkExtractor(url=url, method=args.method)
-                        links_extracted = le.extract(args.cookie, args.header)
-                        if args.o is None:
-                            args.o = 'links_extracted.txt'
-                        with open(args.o, 'a') as f:
-                            f.write(f"*-* Links extracted from {url}\n")
-                            for link in links_extracted:
-                                f.write(link + '\n')
-                            f.write('\n')
-                    else:
-                        print(f"Ignoring invalid URL: {url}")
-        print("\n"+Fore.MAGENTA + f"Results saved in {args.o}" + Style.RESET_ALL)   
-        print(Fore.MAGENTA + "🌿 Finished" + Style.RESET_ALL)
+        print(Fore.MAGENTA + "🌿 Extracting links\n" + Style.RESET_ALL)
+        le = LinkExtractor(_input=args.el)
+        le.run(output_file=args.o)
+        print(Fore.MAGENTA + "🌿 Extract link finished" + Style.RESET_ALL)
+        exit(0)
+    
+    if args.ek:
+        print(Fore.MAGENTA + "🌿 Extracting keys from links\n" + Style.RESET_ALL)
+        jke = JuiceKeysExtractor(_input=args.ek)
+        jke.run(output_file=args.o)
+        print(Fore.MAGENTA + "🌿 Extract keys finished" + Style.RESET_ALL)
         exit(0)
 
     if args.td:
