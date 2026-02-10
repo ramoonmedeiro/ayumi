@@ -13,8 +13,9 @@ from typing import Dict, List
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class LinkExtractor:
-    def __init__(self, _input: str):
+    def __init__(self, _input: str, verbose: bool):
         self.input = _input
+        self.verbose = verbose
         self.user_agents = [
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
@@ -79,14 +80,14 @@ class LinkExtractor:
                     f_out.write(f"{link}\n")
                 
                 f_out.write("\n" + "="*50 + "\n\n")
-        print(Fore.MAGENTA + f"\n🪷  Results saved in {output_file}" + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.MAGENTA + f"\n🪷  Results saved in {output_file}" + Style.RESET_ALL)
 
 
 class JuiceKeysExtractor:
-    def __init__(self, _input: str):
+    def __init__(self, _input: str, verbose: bool):
         self.input = _input
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        print(current_dir)
         self.regex_file = os.path.join(current_dir, "regex-patterns", "regex-keys.txt")
 
         self.user_agents = [
@@ -100,7 +101,8 @@ class JuiceKeysExtractor:
         """Lê o arquivo de regex e compila cada linha."""
         patterns = {}
         if not os.path.exists(self.regex_file):
-            print(Fore.RED + f"[-] Erro: Arquivo {self.regex_file} não encontrado!")
+            if self.verbose:
+                print(Fore.RED + f"[-] Erro: Arquivo {self.regex_file} não encontrado!")
             return {}
         
         with open(self.regex_file, 'r') as f:
@@ -110,7 +112,8 @@ class JuiceKeysExtractor:
                     try:
                         patterns[line] = re.compile(line, re.MULTILINE)
                     except Exception as e:
-                        print(Fore.YELLOW + f"[!] Regex inválido ignorado: {line} -> {e}")
+                        if self.verbose:
+                            print(Fore.YELLOW + f"[!] Regex inválido ignorado: {line} -> {e}")
         return patterns
 
     def _get_headers(self) -> dict:
@@ -150,22 +153,23 @@ class JuiceKeysExtractor:
                 urls = [line.strip() for line in f if line.strip()]
         else:
             urls = [self.input]
-
-        print(Fore.CYAN + f"[*] Iniciando busca por chaves em {len(urls)} URLs...")
+        if self.verbose:
+            print(Fore.CYAN + f"[*] Iniciando busca por chaves em {len(urls)} URLs...")
         
         with open(output_file, "a", encoding="utf-8") as f_out:
             with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
                 futures = {executor.submit(self.scan_url, url): url for url in urls}
                 
-                for future in tqdm(concurrent.futures.as_completed(futures), total=len(urls), desc="Scanning Keys", ascii=True, colour="#e01b24"):
+                for future in tqdm(concurrent.futures.as_completed(futures), total=len(urls), desc="Scanning Keys", ascii=True, colour="#e01b24", disable=not self.verbose):
                     results = future.result()
                     
                     if results:
                         for item in results:
-                            print(f"\n{Fore.WHITE}[Target]: {item['url']}")
-                            print(f"{Fore.GREEN}[+] Regex: {Fore.YELLOW}{item['regex']}")
-                            print(f"{Fore.RED}[!] Match: {Fore.WHITE}{item['match']}{Style.RESET_ALL}")
-                            
+                            if self.verbose:
+                                print(f"\n{Fore.WHITE}[Target]: {item['url']}")
+                                print(f"{Fore.GREEN}[+] Regex: {Fore.YELLOW}{item['regex']}")
+                                print(f"{Fore.RED}[!] Match: {Fore.WHITE}{item['match']}{Style.RESET_ALL}")
+                                
                             log_entry = (
                                 f"URL: {item['url']}\n"
                                 f"Regex: {item['regex']}\n"
@@ -174,5 +178,5 @@ class JuiceKeysExtractor:
                             )
                             f_out.write(log_entry)
                             f_out.flush()
-
-        print(Fore.MAGENTA + f"\n✨ Scan finalizado! Resultados salvos em: {output_file}")
+        if self.verbose:
+            print(Fore.MAGENTA + f"\n✨ Scan finalizado! Resultados salvos em: {output_file}")

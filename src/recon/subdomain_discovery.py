@@ -7,8 +7,9 @@ load_dotenv(find_dotenv())
 
 
 class SubdomainDiscovery:
-    def __init__(self, _input: str) -> None:
+    def __init__(self, _input: str, verbose: bool = True) -> None:
         self.input = _input
+        self.verbose = verbose
         self.chaos_api_key = os.getenv("CHAOS_API_KEY")
     
     def _is_file(self):
@@ -34,8 +35,8 @@ class SubdomainDiscovery:
             print(f"Error on trying running command: {str(e)}")
 
     def run_subfinder(self) -> None:
-
-        print(Fore.GREEN + "Running: " + Fore.CYAN + "subfinder" + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.GREEN + "Running: " + Fore.CYAN + "subfinder" + Style.RESET_ALL)
         
         if not self._is_file():
             input_type = "-d"
@@ -56,7 +57,8 @@ class SubdomainDiscovery:
 
     def run_assetfinder(self) -> None:
 
-        print(Fore.GREEN + "Running: " + Fore.CYAN + "assetfinder" + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.GREEN + "Running: " + Fore.CYAN + "assetfinder" + Style.RESET_ALL)
         if not self._is_file():
             input_type = f"echo {self.input}"
         else:
@@ -72,8 +74,8 @@ class SubdomainDiscovery:
         )
 
     def run_chaos(self) -> None:
-            
-        print(Fore.GREEN + "Running: " + Fore.CYAN + "chaos" + Style.RESET_ALL)
+        if self.verbose:    
+            print(Fore.GREEN + "Running: " + Fore.CYAN + "chaos" + Style.RESET_ALL)
         if not self._is_file():
             input_type = "-d"
         else:
@@ -98,8 +100,8 @@ class SubdomainDiscovery:
         )
 
     def run_crtsh(self) -> None:
-
-        print(Fore.GREEN + "Running: " + Fore.CYAN + "crt.sh" + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.GREEN + "Running: " + Fore.CYAN + "crt.sh" + Style.RESET_ALL)
         if not self._is_file():
             input_type = f"echo {self.input}"
         else:
@@ -140,4 +142,5 @@ class SubdomainDiscovery:
         if not output_file:
             output_file = "subs.txt"
         self.parse_results(output_file=output_file)
-        print(Fore.MAGENTA + f"\n🪷  Results saved in {output_file}" + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.MAGENTA + f"\n🪷  Results saved in {output_file}" + Style.RESET_ALL)

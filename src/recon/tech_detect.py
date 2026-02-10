@@ -5,20 +5,22 @@ from tqdm import tqdm
 
 
 class TechDetect:
-    def __init__(self):
-        pass
+    def __init__(self, verbose: bool):
+        self.verbose = verbose
 
     def td_single(self, url: str):
         try:
             techs = builtwith(url)
         except UnicodeDecodeError:
-            print(Fore.RED + f"Erro de codificação ao tentar acessar {url}" + Style.RESET_ALL)
+            if self.verbose:
+                print(Fore.RED + f"Erro de codificação ao tentar acessar {url}" + Style.RESET_ALL)
             return {}
 
-        print(Fore.GREEN + url + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.GREEN + url + Style.RESET_ALL)
         for key, value in techs.items():
-            print(f"{key}: {value}")
-        print("\n")
+            if self.verbose:
+                print(f"{key}: {value}")
         
         return techs
 

@@ -5,8 +5,9 @@ import os
 
 
 class Crawlers:
-    def __init__(self, _input: str) -> None:
+    def __init__(self, _input: str, verbose: bool) -> None:
         self.input = _input
+        self.verbose = verbose
     
     def _is_file(self):
         if os.path.isfile(self.input):
@@ -32,7 +33,8 @@ class Crawlers:
 
     def run_katana(self, output_file=None) -> None:
 
-        print(Fore.GREEN + "Running: " + Fore.CYAN + "katana" + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.GREEN + "Running: " + Fore.CYAN + "katana" + Style.RESET_ALL)
 
         if not output_file:
             output_file = "crawler.txt"
@@ -50,11 +52,12 @@ class Crawlers:
         ]
 
         self.run_process(command)
-        print(Fore.MAGENTA + f"Results saved in {output_file}" + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.MAGENTA + f"Results saved in {output_file}" + Style.RESET_ALL)
 
     def run_urlfinder(self, output_file=None) -> None:
-
-        print(Fore.GREEN + "Running: " + Fore.CYAN + "Urlfinder" + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.GREEN + "Running: " + Fore.CYAN + "Urlfinder" + Style.RESET_ALL)
 
         if not output_file:
             output_file = "crawler-history.txt"
@@ -74,4 +77,5 @@ class Crawlers:
         ]
 
         self.run_process(command)
-        print(Fore.MAGENTA + f"Results saved in {output_file}" + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.MAGENTA + f"Results saved in {output_file}" + Style.RESET_ALL)

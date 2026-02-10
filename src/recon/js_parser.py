@@ -9,12 +9,14 @@ class JSParser:
         _input: str, 
         headers=None, 
         cookies=None,
-        method="GET"
+        method="GET",
+        verbose=True
     ) -> None:
         self.input = _input
         self.headers = headers
         self.cookies = cookies
         self.method = method
+        self.verbose = verbose
     
     def _is_file(self):
         if os.path.isfile(self.input):
@@ -39,7 +41,8 @@ class JSParser:
             print(f"Error on trying running command: {str(e)}")
 
     def run_get_js(self, output_file: str = None) -> None:
-        print(Fore.GREEN + "Running: " + Fore.CYAN + "getJS" + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.GREEN + "Running: " + Fore.CYAN + "getJS" + Style.RESET_ALL)
 
         if not output_file:
             output_file = "getJS.txt"
@@ -66,9 +69,9 @@ class JSParser:
             for c in cookies:
                 if c:
                     command.extend(['-header', f'Cookie: {c}'])
-        print(command)
         self.run_process(command)
-        print(Fore.MAGENTA + f"Results saved in {output_file}" + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.MAGENTA + f"Results saved in {output_file}" + Style.RESET_ALL)
 
     def get_js_from_file(self, output_file: str = "filtered_js.txt") -> None:
 
@@ -81,4 +84,5 @@ class JSParser:
             stderr=subprocess.PIPE,
             text=True
         )
-        print(Fore.MAGENTA + f"Results saved in {output_file}" + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.MAGENTA + f"Results saved in {output_file}" + Style.RESET_ALL)

@@ -3,8 +3,9 @@ from colorama import Fore, Style
 import os
 
 class SubdomainTakeover:
-    def __init__(self, domain_file: str) -> None:
+    def __init__(self, domain_file: str, verbose: bool) -> None:
         self.domain_file = domain_file
+        self.verbose = verbose
 
     def run_process(self, command) -> None:
 
@@ -24,8 +25,8 @@ class SubdomainTakeover:
             print(f"Error on trying running command: {str(e)}")
 
     def run_nuclei_takeover(self) -> None:
-
-        print(Fore.GREEN + "Running: " + Fore.CYAN + "Subdomain Takeover Analysis" + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.GREEN + "Running: " + Fore.CYAN + "Subdomain Takeover Analysis" + Style.RESET_ALL)
 
         command = [
             "nuclei",
@@ -58,4 +59,5 @@ class SubdomainTakeover:
         if not output_file:
             output_file = "nuclei_subdomain_takeover_results.txt"
         self.parse_results(output_file=output_file)
-        print(Fore.MAGENTA + f"\n🌹  Results saved in {output_file}" + Style.RESET_ALL)
+        if self.verbose:
+            print(Fore.MAGENTA + f"\n🌹  Results saved in {output_file}" + Style.RESET_ALL)
