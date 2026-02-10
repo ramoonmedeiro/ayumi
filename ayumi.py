@@ -24,6 +24,7 @@ from src.recon.nuclei_client import NucleiClient
 # atk libs
 from src.atk.crlf import CRLFAtk
 from src.atk.subdomain_takeover import SubdomainTakeover
+from src.atk.cors import CorsAnalyzer
 
 # Logger
 from src.logger import Logger
@@ -55,6 +56,7 @@ subs_parser.add_argument('-o', required=False, help='output file.')
 atk_parser = subparsers.add_parser('atk')
 atk_parser.add_argument('-crlf', required=False, help='Run crlf injection')
 atk_parser.add_argument('-st', required=False, help='Run subdomain takeover')
+atk_parser.add_argument('-cors', required=False, help='Run CORS misconfig')
 atk_parser.add_argument('-o', required=False, help='output file.')
 
 
@@ -164,6 +166,12 @@ if args.command == 'atk':
 
     if args.st:
         log.info("🍂 Running subdomain takeover analysis")
-        st_client = SubdomainTakeover(args.st)
+        st_client = SubdomainTakeover(domain_file=args.st, verbose=args.verbose)
         st_client.run_all(output_file=args.o)
         log.info("🍂 Subdomain takeover analysis finished")
+    
+    if args.cors: # Supondo que você criou essa flag
+        log.info("🍁 CORS ANALYSIS MODE", Fore.LIGHTMAGENTA_EX)
+        cors_client = CorsAnalyzer(_input=args.cors, verbose=args.verbose)
+        cors_client.run_all(output_file=args.o)
+        log.info("🍂 CORS analysis finished")
