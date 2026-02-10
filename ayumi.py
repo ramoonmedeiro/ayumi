@@ -19,6 +19,7 @@ from src.recon.crawlers import Crawlers
 from src.recon.js_parser import JSParser
 from src.recon.extractor import LinkExtractor, JuiceKeysExtractor
 from src.recon.tech_detect import TechDetect
+from src.recon.nuclei_client import NucleiClient
 
 # atk libs
 from src.atk.crlf import CRLFAtk
@@ -44,6 +45,8 @@ subs_parser.add_argument('-rh', required=False, help='Run history crawler (urlfi
 subs_parser.add_argument('-el', required=False, help='Extract links from a url')
 subs_parser.add_argument('-ek', required=False, help='Extract keys from a url')
 subs_parser.add_argument('-td', required=False, help='Tech detect from a url or filename.')
+subs_parser.add_argument('-nt', required=False, help='Run nuclei normal templates.')
+subs_parser.add_argument('-ct', required=False, help='Run nuclei custom templates.')
 subs_parser.add_argument('-get-js', required=False, help='Run getJS.')
 subs_parser.add_argument('-filter-js', required=False, help='Filter JS files from urls file.')
 subs_parser.add_argument('-o', required=False, help='output file.')
@@ -133,6 +136,21 @@ if args.command == 'recon':
         else:
             td.td_multi(file_name=args.td, output=args.o)
         log.info("🌿 Finished")
+
+    if args.nt:
+        log.info("🌿 Run normal templates nuclei\n")
+        nc = NucleiClient(_input=args.nt, verbose=args.verbose)
+        nc.run_normal_templates(output_file=args.o)
+        log.info("🌿 Run normal templates nuclei finished")
+        exit(0)
+
+    if args.ct:
+        log.info("🌿 Run custom templates nuclei\n")
+        nc = NucleiClient(_input=args.ct, verbose=args.verbose)
+        nc.run_custom_templates(output_file=args.o)
+        log.info("🌿 Run custom templates nuclei finished")
+        exit(0)
+        
 
 # --- MODO ATTACK ---
 if args.command == 'atk':
