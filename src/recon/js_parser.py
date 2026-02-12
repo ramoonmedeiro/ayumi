@@ -61,12 +61,12 @@ class JSParser:
         ]
 
         if self.headers:
-            for h in headers:
+            for h in self.headers:
                 if h:
                     command.extend(['-header', str(h)])
 
         if self.cookies:
-            for c in cookies:
+            for c in self.cookies:
                 if c:
                     command.extend(['-header', f'Cookie: {c}'])
         self.run_process(command)

@@ -107,8 +107,8 @@ class SubdomainDiscovery:
         else:
             input_type = f"cat {self.input}"
 
-        command = f"{input_type} | xargs -I@ -sh c 'curl -s \"https://crt.sh/?q=%25.@&output=json\"" + \
-            " | jq -r '.[].name_value' | sed 's/\\*\\.//g' | anew temp-crtsh.txt'"
+        command = f"{input_type} | xargs -I@ sh -c 'curl -s \"https://crt.sh/?q=%25.@&output=json\"" + \
+            " | jq -r \".[].name_value\" | sed \"s/\\*\\.//g\" | anew temp-crtsh.txt'"
 
         subprocess.run(
             command,
@@ -124,7 +124,7 @@ class SubdomainDiscovery:
         " | " + \
         "sort" + \
         " | " + \
-        f"anew {output_file} && rm temp-subfinder.txt temp-assetfinder.txt chaos.txt temp-crtsh.txt"
+        f"anew {output_file} && rm -f temp-subfinder.txt temp-assetfinder.txt temp-chaos.txt temp-crtsh.txt"
 
         subprocess.run(
             command,
