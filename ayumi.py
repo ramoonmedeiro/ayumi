@@ -20,11 +20,14 @@ from src.recon.js_parser import JSParser
 from src.recon.extractor import LinkExtractor, JuiceKeysExtractor
 from src.recon.tech_detect import TechDetect
 from src.recon.nuclei_client import NucleiClient
+from src.recon.param_discovery import ParamDiscovery
 
 # atk libs
 from src.atk.crlf import CRLFAtk
 from src.atk.subdomain_takeover import SubdomainTakeover
 from src.atk.cors import CorsAnalyzer
+from src.atk.xss import XSSScanner
+from src.atk.http_methods import HTTPMethodScanner
 
 # Logger
 from src.logger import Logger
@@ -50,6 +53,8 @@ subs_parser.add_argument('-nt', required=False, help='Run nuclei normal template
 subs_parser.add_argument('-ct', required=False, help='Run nuclei custom templates.')
 subs_parser.add_argument('-get-js', required=False, help='Run getJS.')
 subs_parser.add_argument('-filter-js', required=False, help='Filter JS files from urls file.')
+subs_parser.add_argument('-dp', required=False, help='Discover hidden parameters on URL or file of URLs (x8).')
+subs_parser.add_argument('-wl', required=False, help='Custom wordlist for parameter discovery (used with -dp).')
 subs_parser.add_argument('-o', required=False, help='output file.')
 
 # Cria o subparser para o comando 'atk'
@@ -57,6 +62,10 @@ atk_parser = subparsers.add_parser('atk')
 atk_parser.add_argument('-crlf', required=False, help='Run crlf injection')
 atk_parser.add_argument('-st', required=False, help='Run subdomain takeover')
 atk_parser.add_argument('-cors', required=False, help='Run CORS misconfig')
+atk_parser.add_argument('-xss', required=False, help='Run XSS scanner (dalfox) on URL or file of URLs')
+atk_parser.add_argument('-bxss', required=False, help='Blind XSS callback URL (used with -xss)')
+atk_parser.add_argument('--deep-xss', action='store_true', help='Enable deep DOM XSS scanning (slower)')
+atk_parser.add_argument('-methods', required=False, help='Scan for dangerous HTTP methods (PUT/PATCH/DELETE) on URL or file of URLs')
 atk_parser.add_argument('-o', required=False, help='output file.')
 
 
@@ -152,7 +161,24 @@ if args.command == 'recon':
         nc.run_custom_templates(output_file=args.o)
         log.info("🌿 Run custom templates nuclei finished")
         exit(0)
-        
+
+    if args.dp:
+        log.info("🔍 Discovering hidden parameters (x8)\n")
+        cookie_str = None
+        if args.cookie:
+            cookie_str = "; ".join(args.cookie)
+
+        pd = ParamDiscovery(
+            _input=args.dp,
+            verbose=args.verbose,
+            wordlist=args.wl,
+            headers=args.header or [],
+            cookies=cookie_str,
+        )
+        pd.run_all(output_file=args.o)
+        log.info("🔍 Parameter discovery finished")
+        exit(0)
+
 
 # --- MODO ATTACK ---
 if args.command == 'atk':
@@ -175,3 +201,36 @@ if args.command == 'atk':
         cors_client = CorsAnalyzer(_input=args.cors, verbose=args.verbose)
         cors_client.run_all(output_file=args.o)
         log.info("🍂 CORS analysis finished")
+
+    if args.xss:
+        log.info("🎯 XSS SCANNER MODE (dalfox)", Fore.LIGHTMAGENTA_EX)
+        # Monta cookies como string a partir da lista de -C
+        cookie_str = None
+        if args.cookie:
+            cookie_str = "; ".join(args.cookie)
+
+        xss_client = XSSScanner(
+            _input=args.xss,
+            verbose=args.verbose,
+            blind_url=args.bxss,
+            headers=args.header or [],
+            cookies=cookie_str,
+            deep=args.deep_xss,
+        )
+        xss_client.run_all(output_file=args.o)
+        log.info("🎯 XSS scan finished")
+
+    if args.methods:
+        log.info("🔓 HTTP METHODS SCANNER MODE", Fore.LIGHTMAGENTA_EX)
+        cookie_str = None
+        if args.cookie:
+            cookie_str = "; ".join(args.cookie)
+
+        methods_client = HTTPMethodScanner(
+            _input=args.methods,
+            verbose=args.verbose,
+            headers=args.header or [],
+            cookies=cookie_str,
+        )
+        methods_client.run_all(output_file=args.o)
+        log.info("🔓 HTTP methods scan finished")
