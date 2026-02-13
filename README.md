@@ -29,13 +29,22 @@ Ayumi was built to operate in modules. It has two modules: recon and atk (attack
 $ python3 ayumi.py -h
 
 
-usage: ayumi.py [-h] {recon,atk} ...
+usage: ayumi.py [-h] [-C COOKIE] [-H HEADER] [-m METHOD] [-v] [--bg] {recon,atk,bg} ...
 
 positional arguments:
-  {recon,atk}
+  {recon,atk,bg}
+    bg                  Gerenciar processos em background
 
 options:
-  -h, --help   show this help message and exit
+  -h, --help            show this help message and exit
+  -C COOKIE, --cookie COOKIE
+                        Cookie to use in requests.
+  -H HEADER, --header HEADER
+                        Header to use in requests.
+  -m METHOD, --method METHOD
+                        HTTP method to use in requests.
+  -v, --verbose         Enable verbose mode.
+  --bg                  Executar em background (sobrevive ao fechar SSH).
 ```
 
 To find out which flags can be used for the recon module, simply run the command below
@@ -221,6 +230,62 @@ python3 ayumi.py -C "session=abc123" atk -methods urls.txt -o results.jsonl -v
   "server": "nginx"
 }
 ```
+
+## Background Mode
+
+Permite executar qualquer comando `recon` ou `atk` em background, de forma que o processo **sobreviva ao fechamento da sessao SSH**. Ideal para rodar em VPS.
+
+Ao usar a flag `--bg`, o Ayumi re-executa o comando como um processo completamente desacoplado do terminal (via `setsid`), redireciona a saida para um arquivo de log e salva o PID. Voce pode desconectar do SSH tranquilo.
+
+### Rodar em background
+
+Adicione `--bg` antes do comando:
+
+```bash
+# Recon em background
+python3 ayumi.py --bg recon -ds example.com
+python3 ayumi.py --bg recon -rc https://example.com -o urls.txt
+python3 ayumi.py --bg recon -nt targets.txt -o nuclei_results.txt
+
+# Ataque em background
+python3 ayumi.py --bg atk -xss urls_com_params.txt -o xss_results.jsonl
+python3 ayumi.py --bg atk -methods urls_alive.txt -o methods.jsonl
+```
+
+O Ayumi exibe o PID e o caminho do log, e sai imediatamente. O processo continua rodando mesmo apos fechar o SSH.
+
+### Gerenciar processos em background
+
+```bash
+# Ver status de todos os processos background
+python3 ayumi.py bg status
+
+# Ver logs de um processo (ultimas 50 linhas por default)
+python3 ayumi.py bg logs --label recon_ds
+
+# Ver mais linhas do log
+python3 ayumi.py bg logs --label recon_ds --tail 200
+
+# Ver log mais recente (sem especificar label)
+python3 ayumi.py bg logs
+
+# Parar um processo em background
+python3 ayumi.py bg stop --label recon_ds
+
+# Limpar pidfiles de processos que ja terminaram
+python3 ayumi.py bg stop --cleanup
+```
+
+**Subcomandos do `bg`:**
+
+| Subcomando | Descricao |
+|------------|-----------|
+| `bg status` | Lista todos os processos background e se estao rodando |
+| `bg logs --label LABEL` | Mostra as ultimas linhas do log do processo |
+| `bg stop --label LABEL` | Para o processo (SIGTERM, depois SIGKILL se necessario) |
+| `bg stop --cleanup` | Remove pidfiles de processos que ja finalizaram |
+
+> **Onde ficam os arquivos:** Logs em `~/.ayumi/logs/`, PIDs em `~/.ayumi/bg/`.
 
 # TODO
 
