@@ -37,6 +37,7 @@ parser.add_argument('-C', '--cookie', required=False, help='Cookie to use in req
 parser.add_argument('-H', '--header', required=False, help='Header to use in requests.', action='append', default=None)
 parser.add_argument("-m", "--method", required=False, help="HTTP method to use in requests.", default="GET")
 parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose mode.")
+parser.add_argument("--bg", action="store_true", help="Executar em background (sobrevive ao fechar SSH).")
 
 subparsers = parser.add_subparsers(dest='command')
 
@@ -68,17 +69,49 @@ atk_parser.add_argument('--deep-xss', action='store_true', help='Enable deep DOM
 atk_parser.add_argument('-methods', required=False, help='Scan for dangerous HTTP methods (PUT/PATCH/DELETE) on URL or file of URLs')
 atk_parser.add_argument('-o', required=False, help='output file.')
 
+# Cria o subparser para o comando 'bg' (gerenciamento de processos em background)
+bg_parser = subparsers.add_parser('bg', help='Gerenciar processos em background')
+bg_subparsers = bg_parser.add_subparsers(dest='bg_command')
+
+bg_status_parser = bg_subparsers.add_parser('status', help='Ver status dos processos em background')
+
+bg_logs_parser = bg_subparsers.add_parser('logs', help='Ver logs de um processo em background')
+bg_logs_parser.add_argument('--label', required=False, default=None, help='Label do processo')
+bg_logs_parser.add_argument('--tail', type=int, default=50, help='Numero de linhas (default: 50)')
+
+bg_stop_parser = bg_subparsers.add_parser('stop', help='Parar um processo em background')
+bg_stop_parser.add_argument('--label', required=False, default=None, help='Label do processo')
+bg_stop_parser.add_argument('--cleanup', action='store_true', help='Limpar pidfiles de processos mortos')
 
 
 # Analisa os argumentos da linha de comando
 args = parser.parse_args()
+
+# --- MODO BG (gerenciamento de background) ---
+if args.command == 'bg':
+    from src.background import print_bg_status, tail_bg_log, stop_bg_process
+    if args.bg_command == 'status':
+        print_bg_status()
+    elif args.bg_command == 'logs':
+        tail_bg_log(label=args.label, lines=args.tail)
+    elif args.bg_command == 'stop':
+        stop_bg_process(label=args.label, cleanup_dead=args.cleanup)
+    else:
+        bg_parser.print_help()
+    exit(0)
+
+# --- BACKGROUND MODE: re-executa em background se --bg foi passado ---
+if getattr(args, 'bg', False) and args.command in ['recon', 'atk']:
+    from src.background import run_in_background
+    run_in_background(args=args)
+
 log = Logger(verbose=args.verbose)
 
 # Banner inicial
 log.info(Settings.BANNER.value, Fore.LIGHTRED_EX)
 
 if args.command not in ['recon', 'atk']:
-    parser.error("Comando inválido. Os comandos válidos são 'recon' e 'atk'.")
+    parser.error("Comando inválido. Os comandos válidos são 'recon', 'atk' e 'bg'.")
 
 # --- MODO RECON ---
 if args.command == 'recon':
