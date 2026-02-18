@@ -48,5 +48,21 @@ echo "[+] Install anew"
 go install -v github.com/tomnomnom/anew@latest
 echo "Anew installed"
 
+echo "[+] Install dalfox (XSS scanner)"
+go install -v github.com/hahwul/dalfox/v2@latest
+echo "Dalfox installed"
+
+echo "[+] Install Rust + x8 (parameter fuzzer)"
+if ! command -v cargo &> /dev/null; then
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    source "$HOME/.cargo/env"
+    echo "Rust installed"
+else
+    echo "Rust already installed: $(cargo --version)"
+fi
+cargo install x8 2>/dev/null || echo "[!] Failed to install x8 via cargo"
+echo "x8 installed"
+
 echo "[+] Passando tudo para /usr/bin"
 sudo mv ~/go/bin/* /usr/bin/
+sudo cp "$HOME/.cargo/bin/x8" /usr/bin/ 2>/dev/null || true
